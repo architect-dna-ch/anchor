@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+:root {
+  --bg:      #0c0c0b;
+  --surface: #161614;
+  --border:  #252320;
+  --text:    #e6e1d8;
+  --muted:   #5c5852;
+  --dim:     #323028;
+  --accent:  #c4a882;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.serif { font-family: Georgia, "Times New Roman", serif; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in { animation: fadeUp 0.35s ease forwards; }
+
+textarea, input {
+  caret-color: var(--accent);
+}
+
+::selection {
+  background: #c4a88230;
+}
