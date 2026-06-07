@@ -2,7 +2,12 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const dynamic = "force-dynamic";
 
+const ALLOWED = ["https://anchor.architect-dna.ch", "http://localhost:3000"];
+
 export async function POST(req: Request) {
+  const origin = req.headers.get("origin") ?? "";
+  if (!ALLOWED.includes(origin)) return Response.json({ error: "Forbidden" }, { status: 403 });
+
   const { loop, profile } = await req.json();
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
