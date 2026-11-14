@@ -23,6 +23,7 @@ const PROFILE_KEY   = "anchor_profile";
 const LOGS_KEY      = "anchor_logs";
 const PURCHASED_KEY = "anchor_purchased";
 const USED_SID_KEY  = "anchor_used_sids";
+const TOKEN_KEY     = "anchor_token";   // the purchase id; sessions are counted on the server
 
 const QUESTIONS = [
   {
@@ -87,6 +88,13 @@ export default function Anchor() {
 
   const mainInputRef = useRef<HTMLTextAreaElement | HTMLInputElement | null>(null);
 
+  // Earlier purchases were only remembered as used ids; carry the latest over as the server-side token.
+  useEffect(() => {
+    if (localStorage.getItem(TOKEN_KEY)) return;
+    const old: string[] = JSON.parse(localStorage.getItem(USED_SID_KEY) || "[]");
+    if (old.length) localStorage.setItem(TOKEN_KEY, old[old.length - 1]);
+  }, []);
+
   useEffect(() => {
     const p = localStorage.getItem(PROFILE_KEY);
     setPurchasedSessions(parseInt(localStorage.getItem(PURCHASED_KEY) || "0"));
@@ -122,6 +130,7 @@ export default function Anchor() {
       .then((r) => r.json())
       .then((data) => {
         if (data.granted) {
+          if (data.token) localStorage.setItem(TOKEN_KEY, data.token);
           const current = parseInt(localStorage.getItem(PURCHASED_KEY) || "0");
           localStorage.setItem(PURCHASED_KEY, String(current + data.granted));
           setPurchasedSessions((prev) => prev + data.granted);
@@ -160,8 +169,10 @@ export default function Anchor() {
       const res = await fetch("/api/reflect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile, entry: logEntry }),
+        body: JSON.stringify({ profile, entry: logEntry, token: localStorage.getItem(TOKEN_KEY) || undefined }),
       });
+      if (res.status === 402) { setLogPhase("input"); alert("No sessions left. Get 10 more below."); return; }
+      if (res.status === 429) { setLogPhase("input"); alert("Too many requests. Try again in a few minutes."); return; }
       const data = await res.json();
       setReflection(data.reflection);
       setFollowUp(data.followUp);

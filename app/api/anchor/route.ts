@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { allow, clientIp, clip } from "@/app/lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,12 @@ export async function POST(req: Request) {
   const origin = req.headers.get("origin") ?? "";
   if (!ALLOWED.includes(origin)) return Response.json({ error: "Forbidden" }, { status: 403 });
 
-  const { loop, profile } = await req.json();
+  // Emergency mode stays free (tiny, cheap answers), but capped against scripted abuse.
+  if (!allow(`anchor:${clientIp(req)}`, 20, 3_600_000)) return Response.json({ error: "rate_limited" }, { status: 429 });
+  const body = await req.json().catch(() => ({}));
+  const loop = clip(body?.loop, 600);
+  const profile = { name: clip(body?.profile?.name, 60) };
+  if (!loop.trim()) return Response.json({ error: "Missing loop" }, { status: 400 });
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 

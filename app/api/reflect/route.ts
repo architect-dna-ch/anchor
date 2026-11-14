@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { allow, clientIp, clip, creditsLeft, spendCredit } from "@/app/lib/guard";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +9,22 @@ export async function POST(req: Request) {
   const origin = req.headers.get("origin") ?? "";
   if (!ALLOWED.includes(origin)) return Response.json({ error: "Forbidden" }, { status: 403 });
 
-  const { profile, entry, followUpResponse } = await req.json();
+  const body = await req.json().catch(() => ({}));
+  const p = body?.profile ?? {};
+  const profile = { name: clip(p.name, 60), situation: clip(p.situation, 800), loops: clip(p.loops, 600), building: clip(p.building, 600) };
+  const entry = clip(body?.entry, 3000), followUpResponse = clip(body?.followUpResponse, 1500);
+  const token = body?.token;
+  if (!entry.trim()) return Response.json({ error: "Missing entry" }, { status: 400 });
+  const ip = clientIp(req);
+  if (!allow(`reflect:${ip}`, 30, 3_600_000)) return Response.json({ error: "rate_limited" }, { status: 429 });
+
+  // A new reflection costs one session: from a paid pack, or from the small free allowance per
+  // connection and day. Follow-ups belong to the same session and cost nothing.
+  let paid = false;
+  if (!followUpResponse) {
+    if (token && (await creditsLeft(token, "anchor_sessions")) > 0) paid = true;
+    else if (token || !allow(`free:${ip}`, 5, 86_400_000)) return Response.json({ error: "no_sessions" }, { status: 402 });
+  }
 
   const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -46,6 +62,8 @@ ${isClosing
 
   const text = (msg.content[0] as { text: string }).text.trim();
 
+  const remaining = paid && text ? await spendCredit(token, "anchor_sessions") : undefined;
+
   if (isClosing) {
     return Response.json({ reflection: text, followUp: "" });
   }
@@ -60,5 +78,5 @@ ${isClosing
     ? parts.slice(0, -1).join("\n\n").trim()
     : text;
 
-  return Response.json({ reflection, followUp });
+  return Response.json({ reflection, followUp, remaining });
 }
