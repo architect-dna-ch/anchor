@@ -56,7 +56,7 @@ const QUESTIONS = [
   },
 ];
 
-type Phase = "loading" | "onboarding" | "home" | "log" | "anchor-mode" | "insight" | "sky";
+type Phase = "loading" | "welcome" | "onboarding" | "home" | "log" | "anchor-mode" | "insight" | "sky";
 type LogPhase = "input" | "loading" | "reflected" | "fu-loading" | "done";
 type AnchorPhase = "input" | "loading" | "done";
 
@@ -104,7 +104,7 @@ export default function Anchor() {
       setLogs(l ? JSON.parse(l) : []);
       setPhase("home");
     } else {
-      setPhase("onboarding");
+      setPhase("welcome");
     }
   }, []);
 
@@ -276,6 +276,50 @@ export default function Anchor() {
     <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg)" }}>
       <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "var(--accent)" }} />
     </div>
+  );
+
+  // ── WELCOME: what this is, how it works, what it costs — before any question ──
+
+  if (phase === "welcome") return (
+    <main className="min-h-screen flex flex-col justify-center px-6 py-14" style={{ background: "var(--bg)" }}>
+      <div className="w-full max-w-lg mx-auto fade-in">
+        <p className="text-[11px] tracking-[0.22em] uppercase mb-5" style={{ color: "var(--accent)" }}>Anchor · Architect-DNA</p>
+        <h1 className="serif text-4xl leading-tight mb-4">A companion that knows your actual situation.</h1>
+        <p className="text-[15px] leading-relaxed mb-9" style={{ color: "#a8a297" }}>
+          Not generic advice. You tell Anchor once what you&apos;re dealing with — then it checks in with you,
+          spots the wins you missed, and pulls you out when your head spins.
+        </p>
+
+        <div className="grid gap-3 mb-9">
+          {[
+            ["1", "Set it up in a minute", "Four short questions: your name, your situation, the loops you fall into, what you're building."],
+            ["2", "Log your day", "A few lines. Anchor answers like a brutally honest friend — and asks one question that counts."],
+            ["3", "Anchor mode when it's too much", "One physical action, under 20 words. No analysis. Free, always."],
+          ].map(([n, t, d]) => (
+            <div key={n} className="flex gap-4 p-4 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+              <span className="text-xs mt-0.5" style={{ color: "var(--accent)", fontFamily: "ui-monospace,monospace" }}>{n}</span>
+              <div>
+                <div className="text-[15px] mb-1">{t}</div>
+                <div className="text-[13px] leading-relaxed" style={{ color: "#8a8478" }}>{d}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setPhase("onboarding")}
+          className="w-full py-4 rounded-xl text-[15px] font-medium mb-4"
+          style={{ background: "var(--accent)", color: "#0c0c0b" }}
+        >
+          Start — it takes a minute
+        </button>
+        <p className="text-[12px] text-center leading-relaxed" style={{ color: "var(--muted)" }}>
+          5 sessions free · then 10 for CHF 4.90, one-time, no subscription.<br />
+          Your profile and logs stay on this device. Text is sent to the AI only when you ask for a reflection.<br />
+          Not therapy. In a crisis in Switzerland: call 143 (Die Dargebotene Hand).
+        </p>
+      </div>
+    </main>
   );
 
   // ── ONBOARDING ───────────────────────────────────────────────────────────────
