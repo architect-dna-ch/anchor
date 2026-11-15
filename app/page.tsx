@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import NightSky from "./components/NightSky";
+import { useLang, LangSwitch } from "@/app/lib/lang";
 
 interface Profile {
   name: string;
@@ -29,30 +30,42 @@ const QUESTIONS = [
   {
     key: "name",
     label: "What's your name?",
+    labelDe: "Wie heisst du?",
     placeholder: "First name works",
+    placeholderDe: "Vorname reicht",
     short: true,
     hint: "Enter to continue",
+    hintDe: "Enter zum Weitergehen",
   },
   {
     key: "situation",
     label: "What's your current situation — work, life, daily structure?",
+    labelDe: "Wie sieht deine Situation gerade aus — Arbeit, Leben, Tagesstruktur?",
     placeholder: "What does a typical day actually look like for you?",
+    placeholderDe: "Wie sieht ein typischer Tag bei dir wirklich aus?",
     short: false,
     hint: "⌘ Enter to continue",
+    hintDe: "⌘ Enter zum Weitergehen",
   },
   {
     key: "loops",
     label: "What patterns do you fall into when things get hard?",
+    labelDe: "In welche Muster fällst du, wenn es schwer wird?",
     placeholder: "Overthinking, isolating, numbing, scrolling — whatever it is",
+    placeholderDe: "Grübeln, Rückzug, Betäuben, Scrollen — was auch immer",
     short: false,
     hint: "⌘ Enter to continue",
+    hintDe: "⌘ Enter zum Weitergehen",
   },
   {
     key: "building",
     label: "What are you building or working toward right now?",
+    labelDe: "Was baust du gerade auf, worauf arbeitest du hin?",
     placeholder: "Business, skill, relationship, a version of yourself — anything",
+    placeholderDe: "Business, Skill, Beziehung, eine Version von dir — alles zählt",
     short: false,
     hint: "⌘ Enter to continue",
+    hintDe: "⌘ Enter zum Weitergehen",
   },
 ];
 
@@ -62,6 +75,7 @@ type AnchorPhase = "input" | "loading" | "done";
 
 export default function Anchor() {
   const [phase, setPhase]             = useState<Phase>("loading");
+  const { de, t, toggle } = useLang();
   const [profile, setProfile]         = useState<Profile | null>(null);
   const [logs, setLogs]               = useState<LogEntry[]>([]);
   const [purchasedSessions, setPurchasedSessions] = useState(0);
@@ -171,15 +185,15 @@ export default function Anchor() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ profile, entry: logEntry, token: localStorage.getItem(TOKEN_KEY) || undefined }),
       });
-      if (res.status === 402) { setLogPhase("input"); alert("No sessions left. Get 10 more below."); return; }
-      if (res.status === 429) { setLogPhase("input"); alert("Too many requests. Try again in a few minutes."); return; }
+      if (res.status === 402) { setLogPhase("input"); alert(t("No sessions left. Get 10 more below.", "Keine Sessions mehr. Unten 10 weitere holen.")); return; }
+      if (res.status === 429) { setLogPhase("input"); alert(t("Too many requests. Try again in a few minutes.", "Zu viele Anfragen. In ein paar Minuten nochmal.")); return; }
       const data = await res.json();
       setReflection(data.reflection);
       setFollowUp(data.followUp);
       setLogPhase("reflected");
     } catch {
       setLogPhase("input");
-      alert("Connection issue. Try again.");
+      alert(t("Connection issue. Try again.", "Verbindungsproblem. Nochmal versuchen."));
     }
   }
 
@@ -284,17 +298,17 @@ export default function Anchor() {
     <main className="min-h-screen flex flex-col justify-center px-6 py-14" style={{ background: "var(--bg)" }}>
       <div className="w-full max-w-lg mx-auto fade-in">
         <p className="text-[11px] tracking-[0.22em] uppercase mb-5" style={{ color: "var(--accent)" }}>Anchor · Architect-DNA</p>
-        <h1 className="serif text-4xl leading-tight mb-4">A companion that knows your actual situation.</h1>
+        <LangSwitch de={de} toggle={toggle} />
+        <h1 className="serif text-4xl leading-tight mb-4">{t("A companion that knows your actual situation.", "Ein Begleiter, der deine echte Situation kennt.")}</h1>
         <p className="text-[15px] leading-relaxed mb-9" style={{ color: "#a8a297" }}>
-          Not generic advice. You tell Anchor once what you&apos;re dealing with — then it checks in with you,
-          spots the wins you missed, and pulls you out when your head spins.
+          {t("Not generic advice. You tell Anchor once what you're dealing with — then it checks in with you, spots the wins you missed, and pulls you out when your head spins.", "Keine 08/15-Tipps. Du sagst Anchor einmal, womit du zu tun hast — dann checkt er bei dir ein, sieht die Erfolge, die du übersehen hast, und holt dich raus, wenn dein Kopf dreht.")}
         </p>
 
         <div className="grid gap-3 mb-9">
           {[
-            ["1", "Set it up in a minute", "Four short questions: your name, your situation, the loops you fall into, what you're building."],
-            ["2", "Log your day", "A few lines. Anchor answers like a brutally honest friend — and asks one question that counts."],
-            ["3", "Anchor mode when it's too much", "One physical action, under 20 words. No analysis. Free, always."],
+            ["1", t("Set it up in a minute", "In einer Minute eingerichtet"), t("Four short questions: your name, your situation, the loops you fall into, what you're building.", "Vier kurze Fragen: dein Name, deine Situation, deine Schleifen, woran du baust.")],
+            ["2", t("Log your day", "Schreib deinen Tag auf"), t("A few lines. Anchor answers like a brutally honest friend — and asks one question that counts.", "Ein paar Zeilen. Anchor antwortet wie ein brutal ehrlicher Freund — und stellt eine Frage, die zählt.")],
+            ["3", t("Anchor mode when it's too much", "Anker-Modus, wenn's zu viel ist"), t("One physical action, under 20 words. No analysis. Free, always.", "Eine körperliche Handlung, unter 20 Wörtern. Keine Analyse. Immer gratis.")],
           ].map(([n, t, d]) => (
             <div key={n} className="flex gap-4 p-4 rounded-xl" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
               <span className="text-xs mt-0.5" style={{ color: "var(--accent)", fontFamily: "ui-monospace,monospace" }}>{n}</span>
@@ -311,12 +325,12 @@ export default function Anchor() {
           className="w-full py-4 rounded-xl text-[15px] font-medium mb-4"
           style={{ background: "var(--accent)", color: "#0c0c0b" }}
         >
-          Start — it takes a minute
+          {t("Start — it takes a minute", "Los — dauert eine Minute")}
         </button>
         <p className="text-[12px] text-center leading-relaxed" style={{ color: "var(--muted)" }}>
-          5 sessions free · then 10 for CHF 4.90, one-time, no subscription.<br />
-          Your profile and logs stay on this device. Text is sent to the AI only when you ask for a reflection.<br />
-          Not therapy. In a crisis in Switzerland: call 143 (Die Dargebotene Hand).
+          {t("5 sessions free · then 10 for CHF 4.90, one-time, no subscription.", "5 Sessions gratis · dann 10 für CHF 4.90, einmalig, kein Abo.")}<br />
+          {t("Your profile and logs stay on this device. Text is sent to the AI only when you ask for a reflection.", "Profil und Logs bleiben auf diesem Gerät. Text geht nur an die KI, wenn du um eine Antwort bittest.")}<br />
+          {t("Not therapy. In a crisis in Switzerland: call 143 (Die Dargebotene Hand).", "Keine Therapie. In einer Krise in der Schweiz: 143 (Die Dargebotene Hand).")}
         </p>
       </div>
     </main>
@@ -354,7 +368,7 @@ export default function Anchor() {
           {/* Current question */}
           <div className="fade-in" key={obStep}>
             <label className="block text-lg font-medium mb-5 leading-snug" style={{ color: "var(--text)" }}>
-              {q.label}
+              {de ? q.labelDe : q.label}
             </label>
 
             {q.short ? (
@@ -368,7 +382,7 @@ export default function Anchor() {
                 }}
                 onFocus={e => (e.target.style.borderBottomColor = "var(--accent)")}
                 onBlur={e => (e.target.style.borderBottomColor = "var(--border)")}
-                placeholder={q.placeholder}
+                placeholder={de ? q.placeholderDe : q.placeholder}
                 value={obCurrent}
                 onChange={e => setObCurrent(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && obAdvance()}
@@ -385,7 +399,7 @@ export default function Anchor() {
                 }}
                 onFocus={e => (e.target.style.borderBottomColor = "var(--accent)")}
                 onBlur={e => (e.target.style.borderBottomColor = "var(--border)")}
-                placeholder={q.placeholder}
+                placeholder={de ? q.placeholderDe : q.placeholder}
                 value={obCurrent}
                 onChange={e => setObCurrent(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && e.metaKey) obAdvance(); }}
@@ -393,14 +407,14 @@ export default function Anchor() {
             )}
 
             <div className="flex items-center justify-between mt-4">
-              <span className="text-xs" style={{ color: "var(--dim)" }}>{q.hint}</span>
+              <span className="text-xs" style={{ color: "var(--dim)" }}>{de ? q.hintDe : q.hint}</span>
               <button
                 onClick={obAdvance}
                 disabled={!obCurrent.trim()}
                 className="text-sm font-medium transition-colors"
                 style={{ color: obCurrent.trim() ? "var(--accent)" : "var(--dim)" }}
               >
-                {obStep < QUESTIONS.length - 1 ? "Continue →" : "Start →"}
+                {obStep < QUESTIONS.length - 1 ? t("Continue →", "Weiter →") : t("Start →", "Los →")}
               </button>
             </div>
           </div>
@@ -413,13 +427,14 @@ export default function Anchor() {
 
   if (phase === "home") {
     const hour = new Date().getHours();
-    const tod  = hour < 12 ? "Morning" : hour < 17 ? "Afternoon" : "Evening";
+    const tod  = hour < 12 ? t("Morning", "Guten Morgen") : hour < 17 ? t("Afternoon", "Hallo") : t("Evening", "Guten Abend");
 
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: "var(--bg)" }}>
+        <LangSwitch de={de} toggle={toggle} />
         <div className="w-full max-w-sm fade-in">
           <p className="text-sm mb-1" style={{ color: "var(--muted)" }}>{tod}, {profile?.name}.</p>
-          <h1 className="text-2xl font-semibold mb-10" style={{ color: "var(--text)" }}>What do you need?</h1>
+          <h1 className="text-2xl font-semibold mb-10" style={{ color: "var(--text)" }}>{t("What do you need?", "Was brauchst du?")}</h1>
 
           <div className="space-y-3">
             {/* Daily Log */}
@@ -436,8 +451,8 @@ export default function Anchor() {
               onMouseEnter={e => !atLimit && ((e.currentTarget.style.borderColor = "#c4a88255"))}
               onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}
             >
-              <div className="font-medium mb-1" style={{ color: "var(--text)" }}>Daily Log</div>
-              <div className="text-xs" style={{ color: "var(--muted)" }}>What happened today</div>
+              <div className="font-medium mb-1" style={{ color: "var(--text)" }}>{t("Daily Log", "Tageslog")}</div>
+              <div className="text-xs" style={{ color: "var(--muted)" }}>{t("What happened today", "Was heute passiert ist")}</div>
             </button>
 
             {/* Anchor */}
@@ -449,7 +464,7 @@ export default function Anchor() {
               onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}
             >
               <div className="font-medium mb-1" style={{ color: "var(--text)" }}>Anchor</div>
-              <div className="text-xs" style={{ color: "var(--muted)" }}>Stuck in a loop — get out in 10 seconds</div>
+              <div className="text-xs" style={{ color: "var(--muted)" }}>{t("Stuck in a loop — get out in 10 seconds", "In einer Schleife — in 10 Sekunden raus")}</div>
             </button>
 
             {/* Night Sky */}
@@ -460,8 +475,8 @@ export default function Anchor() {
               onMouseEnter={e => (e.currentTarget.style.borderColor = "#c4a88230")}
               onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}
             >
-              <div className="font-medium mb-1" style={{ color: "var(--text)" }}>Night Sky</div>
-              <div className="text-xs" style={{ color: "var(--muted)" }}>Your life clears as your blockers do</div>
+              <div className="font-medium mb-1" style={{ color: "var(--text)" }}>{t("Night Sky", "Nachthimmel")}</div>
+              <div className="text-xs" style={{ color: "var(--muted)" }}>{t("Your life clears as your blockers do", "Dein Leben klart auf, wenn deine Blockaden gehen")}</div>
             </button>
 
             {/* This Week */}
@@ -478,11 +493,11 @@ export default function Anchor() {
               onMouseEnter={e => sessionCount >= 3 && (e.currentTarget.style.borderColor = "#c4a88255")}
               onMouseLeave={e => (e.currentTarget.style.borderColor = "var(--border)")}
             >
-              <div className="font-medium mb-1" style={{ color: "var(--text)" }}>This Week</div>
+              <div className="font-medium mb-1" style={{ color: "var(--text)" }}>{t("This Week", "Diese Woche")}</div>
               <div className="text-xs" style={{ color: "var(--muted)" }}>
                 {sessionCount < 3
-                  ? `Log ${3 - sessionCount} more time${3 - sessionCount !== 1 ? "s" : ""} to unlock`
-                  : "Patterns across your recent logs"}
+                  ? t(`Log ${3 - sessionCount} more time${3 - sessionCount !== 1 ? "s" : ""} to unlock`, `Noch ${3 - sessionCount} Log${3 - sessionCount !== 1 ? "s" : ""} bis hier`)
+                  : t("Patterns across your recent logs", "Muster in deinen letzten Logs")}
               </div>
             </button>
           </div>
@@ -490,10 +505,10 @@ export default function Anchor() {
           {atLimit ? (
             <div className="mt-10 rounded-2xl p-6 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
               <p className="text-sm font-medium mb-1" style={{ color: "var(--text)" }}>
-                {sessionCount === FREE_LIMIT ? "5 free sessions used." : "Sessions used up."}
+                {sessionCount === FREE_LIMIT ? t("5 free sessions used.", "5 Gratis-Sessions verbraucht.") : t("Sessions used up.", "Sessions aufgebraucht.")}
               </p>
               <p className="text-xs mb-5" style={{ color: "var(--muted)" }}>
-                10 more sessions — one-time, no subscription.
+                {t("10 more sessions — one-time, no subscription.", "10 weitere Sessions — einmalig, kein Abo.")}
               </p>
               <button
                 onClick={startCheckout}
@@ -506,7 +521,7 @@ export default function Anchor() {
                   cursor: checkoutLoading ? "not-allowed" : "pointer",
                 }}
               >
-                {checkoutLoading ? "Redirecting…" : "Continue — CHF 4.90"}
+                {checkoutLoading ? t("Redirecting…", "Weiterleitung…") : t("Continue — CHF 4.90", "Weiter — CHF 4.90")}
               </button>
             </div>
           ) : sessionCount > 0 ? (
@@ -532,33 +547,33 @@ export default function Anchor() {
             onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
             onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}
           >
-            ← back
+            {t("← back", "← zurück")}
           </button>
 
           {/* INPUT */}
           {logPhase === "input" && (
             <div className="fade-in flex flex-col flex-1">
               <label className="text-lg font-medium mb-6 block" style={{ color: "var(--text)" }}>
-                What happened today?
+                {t("What happened today?", "Was ist heute passiert?")}
               </label>
               <textarea
                 autoFocus
                 className="flex-1 bg-transparent outline-none text-base resize-none leading-relaxed"
                 style={{ color: "var(--text)", minHeight: "200px" }}
-                placeholder="Drop it here. Stream of consciousness is fine."
+                placeholder={t("Drop it here. Stream of consciousness is fine.", "Lass es hier raus. Ungefiltert ist okay.")}
                 value={logEntry}
                 onChange={e => setLogEntry(e.target.value)}
                 onKeyDown={e => { if (e.key === "Enter" && e.metaKey) submitLog(); }}
               />
               <div className="flex justify-between items-center mt-6 pt-5" style={{ borderTop: "1px solid var(--border)" }}>
-                <span className="text-xs" style={{ color: "var(--dim)" }}>⌘ Enter to send</span>
+                <span className="text-xs" style={{ color: "var(--dim)" }}>{t("⌘ Enter to send", "⌘ Enter zum Senden")}</span>
                 <button
                   onClick={submitLog}
                   disabled={!logEntry.trim()}
                   className="text-sm font-medium transition-colors"
                   style={{ color: logEntry.trim() ? "var(--accent)" : "var(--dim)" }}
                 >
-                  Done →
+                  {t("Done →", "Fertig →")}
                 </button>
               </div>
             </div>
@@ -617,7 +632,7 @@ export default function Anchor() {
                     }}
                     onFocus={e => (e.target.style.borderBottomColor = "var(--accent)")}
                     onBlur={e => (e.target.style.borderBottomColor = "var(--border)")}
-                    placeholder="Answer here..."
+                    placeholder={t("Answer here...", "Hier antworten...")}
                     rows={2}
                     value={fuResp}
                     onChange={e => setFuResp(e.target.value)}
@@ -629,7 +644,7 @@ export default function Anchor() {
                       className="text-xs"
                       style={{ color: "var(--dim)" }}
                     >
-                      skip
+                      {t("skip", "überspringen")}
                     </button>
                     <button
                       onClick={submitFollowUp}
@@ -637,7 +652,7 @@ export default function Anchor() {
                       className="text-sm font-medium"
                       style={{ color: fuResp.trim() ? "var(--accent)" : "var(--dim)" }}
                     >
-                      Send →
+                      {t("Send →", "Senden →")}
                     </button>
                   </div>
                 </div>
@@ -653,7 +668,7 @@ export default function Anchor() {
                     onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
                     onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}
                   >
-                    Done for today →
+                    {t("Done for today →", "Fertig für heute →")}
                   </button>
                 </div>
               )}
@@ -677,15 +692,15 @@ export default function Anchor() {
             onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
             onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}
           >
-            ← back
+            {t("← back", "← zurück")}
           </button>
 
           {anchorPhase === "input" && (
             <div className="fade-in">
               <label className="text-lg font-medium mb-2 block leading-snug" style={{ color: "var(--text)" }}>
-                What loop are you in?
+                {t("What loop are you in?", "In welcher Schleife steckst du?")}
               </label>
-              <p className="text-sm mb-8" style={{ color: "var(--muted)" }}>10 words or less.</p>
+              <p className="text-sm mb-8" style={{ color: "var(--muted)" }}>{t("10 words or less.", "10 Wörter oder weniger.")}</p>
               <input
                 autoFocus
                 className="w-full bg-transparent outline-none text-lg py-2"
@@ -696,7 +711,7 @@ export default function Anchor() {
                 }}
                 onFocus={e => (e.target.style.borderBottomColor = "var(--accent)")}
                 onBlur={e => (e.target.style.borderBottomColor = "var(--border)")}
-                placeholder="overthinking everything..."
+                placeholder={t("overthinking everything...", "ich zerdenke alles...")}
                 value={anchorIn}
                 onChange={e => setAnchorIn(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && submitAnchor()}
@@ -709,7 +724,7 @@ export default function Anchor() {
                   className="text-sm font-medium"
                   style={{ color: anchorIn.trim() ? "var(--accent)" : "var(--dim)" }}
                 >
-                  Go →
+                  {t("Go →", "Los →")}
                 </button>
               </div>
             </div>
@@ -733,7 +748,7 @@ export default function Anchor() {
                 onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
                 onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}
               >
-                back to home
+                {t("back to home", "zurück")}
               </button>
             </div>
           )}
@@ -756,15 +771,15 @@ export default function Anchor() {
             onMouseEnter={e => (e.currentTarget.style.color = "var(--text)")}
             onMouseLeave={e => (e.currentTarget.style.color = "var(--muted)")}
           >
-            ← back
+            {t("← back", "← zurück")}
           </button>
-          <h2 className="text-xl font-semibold mb-8" style={{ color: "var(--text)" }}>This Week</h2>
+          <h2 className="text-xl font-semibold mb-8" style={{ color: "var(--text)" }}>{t("This Week", "Diese Woche")}</h2>
 
           <div className="space-y-8">
             {recent.map((log) => (
               <div key={log.id} className="pl-4" style={{ borderLeft: "1px solid var(--border)" }}>
                 <p className="text-xs mb-2" style={{ color: "var(--dim)" }}>
-                  {new Date(log.date).toLocaleDateString("en-CH", { weekday: "short", day: "numeric", month: "short" })}
+                  {new Date(log.date).toLocaleDateString(de ? "de-CH" : "en-CH", { weekday: "short", day: "numeric", month: "short" })}
                 </p>
                 <p className="text-sm leading-relaxed mb-3" style={{ color: "var(--muted)" }}>
                   {log.entry.length > 120 ? log.entry.slice(0, 120) + "…" : log.entry}

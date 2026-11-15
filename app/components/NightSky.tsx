@@ -1,23 +1,24 @@
 "use client";
 
+import { useLang } from "@/app/lib/lang";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 
 const BLOCKERS = [
-  { id: "sleep",     label: "Sleep",     color: "#6ba3d6" },
-  { id: "movement",  label: "Movement",  color: "#6ecf8a" },
-  { id: "structure", label: "Structure", color: "#c4a882" },
-  { id: "silence",   label: "Silence",   color: "#a89fd4" },
-  { id: "build",     label: "Build",     color: "#f0a060" },
-  { id: "presence",  label: "Presence",  color: "#7dcfb0" },
+  { id: "sleep",     label: "Sleep", labelDe: "Schlaf",     color: "#6ba3d6" },
+  { id: "movement",  label: "Movement", labelDe: "Bewegung",  color: "#6ecf8a" },
+  { id: "structure", label: "Structure", labelDe: "Struktur", color: "#c4a882" },
+  { id: "silence",   label: "Silence", labelDe: "Stille",   color: "#a89fd4" },
+  { id: "build",     label: "Build", labelDe: "Aufbauen",     color: "#f0a060" },
+  { id: "presence",  label: "Presence", labelDe: "Präsenz",  color: "#7dcfb0" },
 ];
 
 const DOMAIN_STARS = [
-  { x: 0.20, y: 0.13, domain: "Health",     insight: "Your body is the foundation. Everything else is built on it.",                size: 2.8, deps: ["sleep", "movement"]    },
-  { x: 0.72, y: 0.09, domain: "Clarity",    insight: "When you stop filling silence, you start hearing yourself.",                  size: 2.2, deps: ["silence", "structure"]  },
-  { x: 0.46, y: 0.19, domain: "Work",       insight: "The builder attracts what the dreamer only imagines.",                        size: 2.5, deps: ["build", "structure"]    },
-  { x: 0.13, y: 0.33, domain: "Connection", insight: "People feel presence before they hear words.",                                size: 2.0, deps: ["presence", "silence"]   },
-  { x: 0.84, y: 0.27, domain: "Attraction", insight: "You didn't plan that. The version training and building — that attracted it.", size: 2.3, deps: ["movement", "build"]     },
-  { x: 0.58, y: 0.07, domain: "Direction",  insight: "Structure is freedom. The routine is the north star.",                        size: 1.8, deps: ["structure", "presence"]  },
+  { x: 0.20, y: 0.13, domain: "Health", domainDe: "Gesundheit",     insight: "Your body is the foundation. Everything else is built on it.", insightDe: "Dein Körper ist das Fundament. Alles andere baut darauf.",                size: 2.8, deps: ["sleep", "movement"]    },
+  { x: 0.72, y: 0.09, domain: "Clarity", domainDe: "Klarheit",    insight: "When you stop filling silence, you start hearing yourself.", insightDe: "Wenn du aufhörst, Stille zu füllen, fängst du an, dich zu hören.",                  size: 2.2, deps: ["silence", "structure"]  },
+  { x: 0.46, y: 0.19, domain: "Work", domainDe: "Arbeit",       insight: "The builder attracts what the dreamer only imagines.", insightDe: "Wer baut, zieht an, was der Träumer sich nur vorstellt.",                        size: 2.5, deps: ["build", "structure"]    },
+  { x: 0.13, y: 0.33, domain: "Connection", domainDe: "Verbindung", insight: "People feel presence before they hear words.", insightDe: "Menschen spüren Präsenz, bevor sie Worte hören.",                                size: 2.0, deps: ["presence", "silence"]   },
+  { x: 0.84, y: 0.27, domain: "Attraction", domainDe: "Anziehung", insight: "You didn't plan that. The version training and building — that attracted it.", insightDe: "Das hast du nicht geplant. Die Version, die trainiert und baut — die hat es angezogen.", size: 2.3, deps: ["movement", "build"]     },
+  { x: 0.58, y: 0.07, domain: "Direction", domainDe: "Richtung",  insight: "Structure is freedom. The routine is the north star.", insightDe: "Struktur ist Freiheit. Die Routine ist der Nordstern.",                        size: 1.8, deps: ["structure", "presence"]  },
 ];
 
 // Fixed background stars — generated once
@@ -39,6 +40,7 @@ function pastKey(daysAgo: number) {
 interface Props { onBack: () => void; }
 
 export default function NightSky({ onBack }: Props) {
+  const { de, t } = useLang();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef    = useRef(0);
 
@@ -224,10 +226,10 @@ export default function NightSky({ onBack }: Props) {
           backdropFilter: "blur(8px)",
         }}>
           <div style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.18em", color: "#c4a882", textTransform: "uppercase", marginBottom: "6px" }}>
-            {hovered.domain}
+            {de ? hovered.domainDe : hovered.domain}
           </div>
           <div style={{ fontSize: "12px", color: "#e6e1d8", lineHeight: 1.65, fontFamily: "Georgia, serif", fontStyle: "italic" }}>
-            {hovered.insight}
+            {de ? hovered.insightDe : hovered.insight}
           </div>
         </div>
       )}
@@ -238,7 +240,7 @@ export default function NightSky({ onBack }: Props) {
         background: "none", border: "none", color: "rgba(200,200,200,0.3)",
         fontSize: "11px", letterSpacing: "0.08em", cursor: "pointer", zIndex: 30,
         fontFamily: "system-ui, sans-serif",
-      }}>← back</button>
+      }}>{t("← back", "← zurück")}</button>
 
       {/* Title */}
       <div style={{
@@ -246,7 +248,7 @@ export default function NightSky({ onBack }: Props) {
         fontSize: "9px", letterSpacing: "0.25em", textTransform: "uppercase",
         color: "rgba(196,168,130,0.5)", fontFamily: "system-ui, sans-serif", zIndex: 30,
         whiteSpace: "nowrap",
-      }}>Night Sky</div>
+      }}>{t("Night Sky", "Nachthimmel")}</div>
 
       {/* Check-in panel */}
       <div style={{
@@ -256,7 +258,7 @@ export default function NightSky({ onBack }: Props) {
         zIndex: 10,
       }}>
         <p style={{ textAlign: "center", fontSize: "8px", letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(200,200,200,0.2)", marginBottom: "14px", fontFamily: "system-ui, sans-serif" }}>
-          Today — what did you do
+          {t("Today — what did you do", "Heute — was hast du gemacht")}
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px", maxWidth: "340px", margin: "0 auto" }}>
           {BLOCKERS.map((b, i) => {
@@ -272,7 +274,7 @@ export default function NightSky({ onBack }: Props) {
                 cursor: "pointer", transition: "all 0.4s ease",
                 letterSpacing: "0.03em", fontFamily: "system-ui, sans-serif",
               }}>
-                {b.label}
+                {de ? b.labelDe : b.label}
               </button>
             );
           })}
@@ -283,7 +285,7 @@ export default function NightSky({ onBack }: Props) {
           marginTop: "16px", fontFamily: "Georgia, serif", fontStyle: "italic",
           transition: "color 3s ease",
         }}>
-          {fullyCleared ? "The sky doesn't lie." : "The sky doesn't lie."}
+          {t("The sky doesn't lie.", "Der Himmel lügt nicht.")}
         </p>
       </div>
 
